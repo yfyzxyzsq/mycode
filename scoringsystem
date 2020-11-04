@@ -1,0 +1,513 @@
+/*******************************************
+**文件名：project8
+**创建人：易飞越
+**日期：11.2
+**修改人：易飞越
+**日期：11.3
+**版本：project.8.exp.1
+**__________________________________________
+*******************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define Students 30     //学生总人数不超过30
+#define Course 7
+typedef struct student
+{
+    int NumberScore[Course];       //记录学号及分数
+    char name[15];      //记录姓名
+    int stusum;
+    float stuaverage;
+}STUDENT;
+void InputRecord(int *pstudents,int *pcourse,STUDENT stu[]);    //输入学生姓名学号成绩（不用输出）
+void TotalAverageScore(int *pstudents,int *pcourse,STUDENT stu[],int sum[],float average[]);   //计算并输出每门课程总分和平均分
+void StudentTotalAverageScore(int *pstudents,int *pcourse,STUDENT stu[]);//计算并输出每个学生的总分和平均分
+void SortByScore(int *pstudents,int course,STUDENT stu[],int (*compare)(int score1,int score2));  //按学生总分数升序或降序排列
+int Descending(int score1,int score2);  //降序排列时调用
+int Ascending(int score1,int score2);   //升序排列时调用
+void SortByNumber(int *pstudents,int *pcourse ,STUDENT stu[],int (*compare)(int number1,int number2));    //按学号小到大排序
+void SortByDictionary(int *pstudents,int course,STUDENT stu[]);   //按姓名的字典顺序排出成绩表
+void SearchByNumber(int *pstudents,int course,STUDENT stu[]);  //按学号查询学生排名及其考试成绩
+void SearchByName(int *pstudents,int course,STUDENT stu[]);   //按姓名查询学生排名及其考试成绩
+void StatisticAnalysis(int *pstudents,int course,STUDENT stu[]);   //按优秀、良好、中等、及格、不及格分类，统计各类人数及所占百分比
+void PrintStatistic(int *pstudents,int course,STUDENT stu[]);     //输出每个学生的学号姓名成绩以及课程总分和平均分
+
+
+int main()
+{
+    printf("Number:200110927\n");
+    printf("project No.8-program No.1\n\n");
+
+    STUDENT stu[Students]={0};
+    int students=0;
+    int ichoice,i,j,course=0;
+    int sum[Course]={0};   //记录学生人数,课程总分，学生总分，均初始化为0
+    float average[Course]={0};     //记录平均分，初始化为0
+    printf("1.Input record\n");
+    printf("2.Calculate total and average score of every course.\n");
+    printf("3.Calculate total and average score of every student.\n");
+    printf("4.Sort in descending order by total score of every student.\n");
+    printf("5.Sort in ascending order by total score of every stydent.\n");
+    printf("6.Sort in ascending order by number.\n");
+    printf("7.Sort in dictionary order by name.\n");
+    printf("8.Search by number.\n");
+    printf("9.Search by name.\n");
+    printf("10.Statistic analysis for every course.\n");
+    printf("11.List record.\n");
+    printf("0.Exit.\n");
+   do{
+        printf("Please enter your choice.\n");
+        scanf("%d",&ichoice);
+        if(ichoice<0||ichoice>11)
+            printf("No such choice.Please input a inteter between 0 and 11.\n");
+        if(students==0&&ichoice>=2)
+        {
+            do{
+                printf("The students' statistic hasn't been record,please choose 1 first.\n");
+                printf("Please input your choice:\n");
+                scanf("%d",&ichoice);
+            }while(ichoice!=1);
+        }
+        switch (ichoice)
+        {
+        case 1:
+            {
+                InputRecord(&students,&course,stu);
+                break;
+            }
+        case 2:
+            {
+                for(i=0;i<=Course;i++)
+                {
+                    sum[i]=0;
+                    average[i]=0;
+                }
+                TotalAverageScore(&students,&course,stu,sum,average);   //计算并输出每门课程总分和平均分
+                printf("Total and average score of every course.\n");
+                printf("course\t\ttotal score \t average score\n");
+                for(i=1;i<=course;i++)
+                {
+                    printf("course%d\t\t%d\t\t %f\n",i,sum[i],average[i]);
+                }
+                break;
+            }
+        case 3:
+            {
+                printf("Sort in ascending order by total score of every student.\n");
+                StudentTotalAverageScore(&students,&course,stu);
+                for(i=0;i<=students-1;i++)
+                {
+                    printf("name:%s Number:%d total score:%d average score:%f\n",stu[i].name,stu[i].NumberScore[0],stu[i].stusum,stu[i].stuaverage);
+                }
+                break;
+            }
+        case 4:
+            {
+                printf("Sort in descending order by total score of every student.\n");
+                SortByScore(&students,course,stu,Descending);
+                for(i=0;i<=students-1;i++)
+                {
+                    printf("total score:%d name:%s number:%d\n",stu[i].stusum,stu[i].name,stu[i].NumberScore[0]);
+                }
+                break;
+            }
+        case 5:
+            {
+                printf("Sort in ascending order by total score of every student.\n");
+                SortByScore(&students,course,stu,Ascending);
+                for(i=0;i<=students-1;i++)
+                {
+                    printf("total score:%d name:%s number:%d\n",stu[i].stusum,stu[i].name,stu[i].NumberScore[0]);
+                }
+                break;
+            }
+        case 6:
+            {
+                SortByNumber(&students,&course,stu,Ascending);
+                printf("Sort in ascending order by number.\n");
+                printf("Number\t score\n");
+                for(i=0;i<=students-1;i++)
+                {
+                    for(j=0;j<=course;j++)
+                    {
+                        printf("%d\t",stu[i].NumberScore[j]);
+                    }
+                    printf("\n");
+                }
+
+                break;
+            }
+        case 7:
+            {
+                SortByDictionary(&students,course,stu);
+                printf("Sort in dictionary order by name.\n");
+                printf("name\t number\t score\n");
+                for(i=0;i<=students-1;i++)
+                {
+                    printf("%s\t ",stu[i].name);
+                    for(j=0;j<=course;j++)
+                    {
+                        printf("%d\t",stu[i].NumberScore[j]);
+                    }
+                    printf("\n");
+                }
+                break;
+            }
+        case 8:
+            {
+                SearchByNumber(&students,course,stu);
+                break;
+            }
+        case 9:
+            {
+                SearchByName(&students,course,stu);
+                break;
+            }
+        case 10:
+            {
+                StatisticAnalysis(&students,course,stu);
+                break;
+            }
+        case 11:
+            {
+                printf("Statistic list.\n");
+                PrintStatistic(&students,course,stu);
+                break;
+            }
+        case 0:
+            exit(0);
+        }
+    }while(ichoice!=0);
+}
+
+/*******************************************
+**函数名：InputRecord
+**功能：录入学生学号及其成绩
+**作者：易飞越
+**日期：10.26
+**修改：11.3
+**版本：2.0+
+**__________________________________________
+*******************************************/
+void InputRecord(int *pstudents,int *pcourse,STUDENT stu[])
+{
+    int i,j;
+    printf("The total amount of student cannot be more than 30.\n");
+    printf("Please enter the total amount of students:\n");
+    scanf("%d",pstudents);
+    printf("Please input the amount of course.\n");
+    scanf("%d",pcourse);
+    fflush(stdin);
+    printf("The length of a name cannot be more than 14 letters.\n ");
+    printf("Please enter students' name:\n");
+    printf("form:name1\nname2\n...\n");
+    for(i=0;i<=*pstudents-1;i++)
+    {
+        gets(stu[i].name);
+    }
+    printf("Please enter students'Number and score:\n");
+    printf("Form: Number Score Score ...\n");
+    for(i=0;i<=*pstudents-1;i++)
+    {
+        for(j=0;j<=*pcourse;j++)
+        {
+            scanf("%d",&stu[i].NumberScore[j]);
+        }
+    }
+}
+/*******************************************
+**函数名：TotalAverageScore
+**功能：计算各个课程的总分和平均分
+**作者：易飞越
+**日期：11.2
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void TotalAverageScore(int *pstudents,int *pcourse,STUDENT stu[],int sum[],float average[])
+{
+    int i,j;
+    for(j=1;j<=*pcourse;j++)
+    {
+        for(i=0;i<=*pstudents-1;i++)
+        {
+            sum[j]=sum[j]+stu[i].NumberScore[j];
+        }
+        average[j]=sum [j]/ (float)*pstudents;
+    }
+}
+/*******************************************
+**函数名：StudentTotalAverageScore
+**功能：计算每个学生的总分和平均分
+**作者：易飞越
+**日期：11.2
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void StudentTotalAverageScore(int *pstudents,int *pcourse,STUDENT stu[])
+{
+    int i,j;
+    for(i=0;i<=*pstudents-1;i++)
+    {
+        stu[i].stusum=0;
+        stu[i].stuaverage=0;
+        for(j=1;j<=*pcourse;j++)
+        {
+            stu[i].stusum=stu[i].stusum+stu[i].NumberScore[j];
+        }
+        stu[i].stuaverage=stu[i].stusum/(float)*pcourse;
+    }
+}
+/*******************************************
+**函数名：SortByScore
+**功能：利用指针调用函数实现对学生成绩升序或降序排列
+**作者：易飞越
+**日期：10.26
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void SortByScore(int *pstudents,int course,STUDENT stu[],int (*compare)(int score1,int score2)){
+    int i,j,k;
+    STUDENT temp;
+    StudentTotalAverageScore(pstudents,&course,stu);
+    for(i=0;i<=*pstudents-2;i++)
+    {
+        k=i;
+        for (j=i+1;j<=*pstudents-1;j++)
+        {
+            if((*compare)(stu[k].stusum,stu[j].stusum))
+                k=j;
+        }
+        if(k!=i)
+        {
+            temp=stu[i];
+            stu[i]=stu[k];
+            stu[k]=temp;
+        }
+    }
+}
+/*******************************************
+**函数名：Descending
+**功能：实现学生分数降序排列时调用
+**作者：易飞越
+**日期：10.26
+**版本：1.0
+**__________________________________________
+*******************************************/
+int Descending(int score1,int score2)
+{
+    return score1<score2;
+}
+/*******************************************
+**函数名：Ascending
+**功能：实现学生分数升序排列时调用
+**作者：易飞越
+**日期：10.26
+**版本：1.0
+**__________________________________________
+*******************************************/
+int Ascending(int score1,int score2)
+{
+    return score1>score2;
+}
+/*******************************************
+**函数名：Swap
+**功能：传入两数的地址，实现交换两数的值
+**作者：易飞越
+**日期：10.26
+**版本：1.0
+**__________________________________________
+*******************************************/
+void Swap(int *x,int *y)
+{
+    int temp;
+    temp=*x;
+    *x=*y;
+    *y=temp;
+}
+/*******************************************
+**函数名：SortByNumber
+**功能：对学生成绩按学号升序排列
+**作者：易飞越
+**日期：10.26
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void SortByNumber(int *pstudents,int *pcourse ,STUDENT stu[],int (*compare)(int number1,int number2))
+{
+    int i,j,k;
+    STUDENT temp;
+    for(i=0;i<=*pstudents-2;i++)
+    {
+        k=i;
+        for(j=i+1;j<=*pstudents-1;j++)
+        {
+            if((*compare)(stu[k].NumberScore[0], stu[j].NumberScore[0]))
+                k=j;
+        }
+        if(k!=i)
+        {
+            temp=stu[i];
+            stu[i]=stu[k];
+            stu[k]=temp;
+        }
+    }
+}
+/*******************************************
+**函数名：SortByDictionary
+**功能：对学生成绩按姓名字典顺序升序排列
+**作者：易飞越
+**日期：11.2
+**修改：11.3
+**版本：1.0
+**__________________________________________
+*******************************************/
+void SortByDictionary(int *pstudents,int course,STUDENT stu[])
+{
+    int i,j;
+    STUDENT temp;
+    for(i=0;i<=*pstudents-1;i++)
+    {
+        for(j=i+1;j<=*pstudents-1;j++)
+        {
+            if(strcmp(stu[i].name,stu[j].name)>0)
+            {
+                temp=stu[i];
+                stu[i]=stu[j];
+                stu[j]=temp;
+            }
+        }
+    }
+}
+/*******************************************
+**函数名：SearchByNumber
+**功能：实现输入学生学号查询分数，姓名及排名
+**作者：易飞越
+**日期：11.2
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void SearchByNumber(int *pstudents,int course,STUDENT stu[])
+{
+    int i,j;
+    int inumber=0;   //记录要查询的学号
+    printf("Please enter the number you want to search:");
+    scanf("%d",&inumber);
+    StudentTotalAverageScore(pstudents,&course,stu);
+    SortByScore(pstudents,course,stu,Descending);
+    for(i=0;i<=*pstudents-1;i++)
+    {
+        if(inumber==stu[i].NumberScore[0])
+        {
+            printf("Number: %d rank:%d  ",inumber,i+1);
+            printf("score:");
+            for(j=1;j<=course;j++)
+            {
+                printf(" %d ",stu[i].NumberScore[j]);
+            }
+            printf("\n");
+            return;
+        }
+    }
+    printf("No such number\n");
+}
+/*******************************************
+**函数名：SearchByName
+**功能：实现输入学生姓名查询分数及排名
+**作者：易飞越
+**日期：11.2
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void SearchByName(int *pstudents,int course,STUDENT stu[])
+{
+    int i,j;
+    char cname[10];   //记录要查询的名字
+    printf("Please enter the student's name you want to search:\n");
+    fflush(stdin);
+    gets(cname);
+    StudentTotalAverageScore(pstudents,&course,stu);
+    SortByScore(pstudents,course,stu,Descending);
+    for(i=0;i<=*pstudents-1;i++)
+    {
+        if(strcmp(cname,stu[i].name)==0)
+        {
+            printf("Name: %s  Rank: %d",cname,i+1);
+            printf(" score:");
+            for(j=1;j<=course;j++)
+            {
+                printf(" %d ",stu[i].NumberScore[j]);
+            }
+            printf("\n");
+            return;
+        }
+    }
+    printf("No such name\n");
+}
+/*******************************************
+**函数名：StatisticAnalysis
+**功能：对学生成绩按等级划分，并记录每个等级的学生人数，输出人数及百分比
+**作者：易飞越
+**日期：11.2
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void StatisticAnalysis(int *pstudents,int course,STUDENT stu[])
+{
+    int i,j;
+    int grade[6][5]={0};    //记录五个等级中各个等级的人数
+    for(j=1;j<=course;j++)
+        {
+            for(i=0;i<=*pstudents-1;i++)
+            {
+                if(stu[i].NumberScore[j]>=90&&stu[i].NumberScore[j]<=100)
+                    grade[j][0]++;
+                else if(stu[i].NumberScore[j]>=80&&stu[i].NumberScore[j]<=89)
+                    grade[j][1]++;
+                else if(stu[i].NumberScore[j]>=70&&stu[i].NumberScore[j]<=79)
+                    grade[j][2]++;
+                else if(stu[i].NumberScore[j]>=60&&stu[i].NumberScore[j]<=69)
+                    grade[j][3]++;
+                else
+                    grade[j][4]++;
+            }
+        }
+        for(i=1;i<=course;i++)
+            {
+                printf("course%d\n",i);
+                printf("优秀人数：%d,所占百分比%f%%\n",grade[i][0],100*grade[i][0]*1.0 / *pstudents);
+                printf("良好人数：%d,所占百分比%f%%\n",grade[i][1],100*grade[i][1]*1.0 / *pstudents);
+                printf("中等人数：%d,所占百分比%f%%\n",grade[i][2],100*grade[i][2]*1.0 / *pstudents);
+                printf("及格人数：%d,所占百分比%f%%\n",grade[i][3],100*grade[i][3]*1.0 / *pstudents);
+                printf("不及格人数：%d,所占百分比%f%%\n",grade[i][4],100*grade[i][4]*1.0 / *pstudents);
+            }
+}
+/*******************************************
+**函数名：PrintStatistic
+**功能:输出学生信息及课程总分和平均分
+**作者：易飞越
+**日期：11.2
+**修改：11.3
+**版本：2.0
+**__________________________________________
+*******************************************/
+void PrintStatistic(int *pstudents,int course,STUDENT stu[])
+{
+    int i,j;
+    StudentTotalAverageScore(pstudents,&course,stu);
+    for(i=0;i<=*pstudents-1;i++)
+    {
+       printf("name:%s   number:%d  score:",stu[i].name,stu[i].NumberScore[0]);
+       for(j=1;j<=course;j++)
+       {
+           printf(" %d ",stu[i].NumberScore[j]);
+       }
+       printf("total score:%d  average score:%f\n",stu[i].stusum,stu[i].stuaverage);
+    }
+}
